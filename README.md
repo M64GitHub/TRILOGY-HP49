@@ -5,7 +5,7 @@ A complete game with sound- and animation effects written in assembly on and for
 This is a logic game, consisting of many levels. Levels can be bigger than the actual screen. The levels consist of a field with different types of stones placed onto it:
 
  - regular stones showing a symbol
- - moving stones, showing an arrow
+ - moving stones showing an arrow
  - wall stones
  - rotation stones: make the moving stones change their direction
 
