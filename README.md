@@ -24,14 +24,19 @@ Only wall stones and rotation stones can be left.
 
 ### Animations showing the game
 
+Start Screen, Level 1-2
 ![](https://github.com/M64GitHub/TRILOGY/blob/main/t1.gif "")  
 
+Level 3-5
 ![](https://github.com/M64GitHub/TRILOGY/blob/main/t2.gif "")  
 
+Level
 ![](https://github.com/M64GitHub/TRILOGY/blob/main/t3.gif "")  
 
+Level
 ![](https://github.com/M64GitHub/TRILOGY/blob/main/t4.gif "")  
 
+Level
 ![](https://github.com/M64GitHub/TRILOGY/blob/main/t5.gif "")  
 
 
