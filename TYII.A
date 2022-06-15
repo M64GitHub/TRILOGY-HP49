@@ -1,0 +1,4886 @@
+HPHP49-X,*PD!NO CODE
+!RPL
+::
+CODE
+% =========
+% TYII.A 5.3
+% 2009 0xF001
+% =============
+
+% === CONSTS ===
+DC SCRNBUF   $80100 %5
+DC FONTADR   $80107 %5
+DC SPRADR    $8010C %5
+
+DC LEV_POS   $03
+DC SCO_POS   $18
+DC BON_POS   $2B
+DC BLK_POS   $3F
+
+% === INIT ===
+!DBGON
+SAVE
+%INTOFF
+
+
+% === INIT GFX ===
+
+GOSUBL INITVARS
+GOSUBL INITSND
+GOSUBL INITGFX
+GOSUBL CLR_SELECTION
+
+GOSUBL CLRSCR
+GOSUBL SWAPSCRN
+GOSUBL CLRSCR
+GOSUBL SWAPSCRN
+
+{
+  GOSUB WAITKEY2
+  ?A#0.B UP
+}
+
+*INTROLOOP
+  GOSUBL CLRSCR
+  GOSUBL SPR_LOGO
+  LA 18
+  R0=A.B
+  LA 18
+  R1=A.B
+  LA 00
+  R2=A.B
+  GOSUBL SETSPR2
+
+  GOSUBL SCROLL
+
+GOSUBL Z_BLK
+LA 04
+R0=A.B
+LA 35
+R1=A.B
+LA 00
+R2=A.B
+GOSUBL SETSPR
+LA 73
+R0=A.B
+LA 35
+R1=A.B
+LA 00
+R2=A.B
+GOSUBL SETSPR
+
+% -- 
+LA 04
+R0=A.B
+LA 33
+R1=A.B
+LA 43
+R2=A.B
+%GOSUBL SETBLOCK_XY
+
+
+  GOSUBL SWAPSCRN
+
+  LC 01400 {
+    A=DAT0.W
+    C-1.A UPNC
+  }
+
+%  GOSUBL SND_STR 
+%  GOSUBL MUSIC
+  GOSUBL WAITKEY2
+  ?A=0.B -> {
+    GOTO INTROLOOP
+  }
+
+%  GOSUBL WAITKEY
+  
+GOSUBL CLRSCR
+GOSUBL SWAPSCRN
+GOSUBL CLRSCR
+GOSUBL SWAPSCRN
+
+LA 00000
+R0=A.A
+GOSUBL SET_LEVEL
+
+% === MAIN ===
+*MAIN
+
+GOSUBL MAPFX_START
+
+% == START ==
+
+GOSUBL DRAW_MAP
+GOSUBL GRAB_MAP_G
+GOSUBL SET_CURSOR
+GOSUBL SWAPSCRN
+
+
+*MAINLOOP
+  GOSUB WAITKEY2
+  GOSUBL KEY_HANDLING
+
+  ?A#0.B -> { 
+    LC 03800 GOSLOW
+  }
+
+  GOSUBL DO_BONUS
+
+
+  GOSUBL ANI_CURSOR
+  GOSUBL PUT_MAP_G
+  GOSUBL SET_CURSOR
+  GOSUBL SET_MARKS
+  GOSUBL SWAPSCRN
+
+GOTO MAINLOOP
+
+
+*ENDMAIN
+GOVLNG ENDME
+
+
+% === FUNCTIONS ===
+*X______FUNCTIONS
+
+*WAITKEY
+% --- WAITKEY
+% RET: A
+  LC FF OUT=C
+  { C=IN2 ?C#0.B UP }
+  { C=IN2 ?C=0.B UP }
+  A=C.A
+  { C=IN2 ?C#0.B UP }
+RTN
+
+*WAITKEY2
+% --- WAITKEY
+% RET: A
+  { C=IN2 }
+  R4=C.A
+
+  GOSUBL KEY
+  AD0EX
+  A=R4.A
+  DAT0=A.A
+RTN
+
+
+*SWAPSCRN
+  GOSUBL SWAPFL
+  AD0EX
+  C=DAT0.B
+  LA 01
+  A=A-C.B
+  DAT0=A.B
+  D=A.B
+
+  GOSUBL SCRN
+  AD0EX
+  A=DAT0.A
+  LC 00AA0
+  C+A.A
+
+  D0=00120 
+  DAT0=C.A
+
+  D0=(5)SCRNBUF
+  DAT0=A.A
+
+?D=0.B -> { 
+  D0=00120 
+  DAT0=A.A
+
+  D0=(5)SCRNBUF
+  DAT0=C.A
+}
+
+RTN
+
+
+*V_SWAPSCRN
+  GOSUBL SWAPFL
+  AD0EX
+  C=DAT0.B
+  LA 01
+  A=A-C.B
+  DAT0=A.B
+  D=A.B
+
+  GOSUBL SCRN
+  AD0EX
+  A=DAT0.A
+  LC 00AA0
+  C+A.A
+
+  D0=(5)SCRNBUF
+  DAT0=A.A
+
+?D=0.B -> { 
+  D0=(5)SCRNBUF
+  DAT0=C.A
+}
+
+RTN
+
+
+*X_____INIT_FUNCS
+*INITGFX
+LC 00 SETLNED
+
+GOSUBL SCRN
+AD0EX
+A=DAT0.A
+D0=00120 
+DAT0=A.A
+
+LC 00AA0
+A+C.A
+D0=(5)SCRNBUF
+DAT0=A.A
+
+GOSUBL S_MENUPTR
+AD0EX
+D1=(5)00130
+A=DAT1.A
+DAT0=A.A
+
+GOSUBL MENUBLOCK
+LC 00130
+CD0EX
+A+1.A
+DAT0=A.A
+
+GOSUBL SCROLLX
+AD0EX
+LA 05
+DAT0=A.B
+
+GOSUBL SCROLLY
+AD0EX
+LA 35
+DAT0=A.B
+
+GOSUBL SCROLLPTR
+AD0EX
+LA 00000
+DAT0=A.A
+
+GOSUBL FONT
+
+GOSUBL SWAPFL
+AD0EX
+LA 00
+DAT0=A.B
+
+RTN
+
+*CLRSCR
+% --- CLR SCRNBUF
+D1=(5)SCRNBUF A=DAT1.A
+AD0EX
+
+LC A9 A=0.W %A-1.W
+{ DAT0=A.W D0+16 C-1.B UPNC }
+RTN
+
+*X_____SND_FUNCTS
+*INITSND
+GOSUBL SND_IDX1
+AD0EX
+LA 00000
+DAT0=A.A
+RTN
+
+*PL_NOTE
+LC 41
+A-C.B
+LC 00000
+C=A.B
+D=C.A
+
+LA 02
+C<A.A
+D+C.A % C*5
+
+
+GOSUBL SND_DAT
+A+D.A
+AD0EX
+A=DAT0.A
+
+D=A.A
+LC 00040
+BEEP2
+
+RTN
+
+
+*MUSIC
+  AD1EX
+
+  GOSUBL SND_IDX1  
+  AD0EX
+  A=DAT0.A
+
+  CD1EX
+  A+C.A
+
+  AD1EX
+
+  A=DAT1.B    
+
+  ?A=0.B -> {
+    GOSUBL SND_IDX1  
+    AD0EX
+    LA 00000 
+    DAT0=A.A
+    RTN
+  }
+
+  LC 20
+  ?A=C.B -> {
+    GOSUBL SND_IDX1  
+    AD0EX
+    A=DAT0.A
+    A+2.A 
+    DAT0=A.A
+    LC 00008 {
+      A=DAT0.W
+      C-1.A UPNC
+    }
+    RTN
+  }
+
+  GOSUB PL_NOTE
+
+  GOSUBL SND_IDX1  
+  AD0EX
+  A=DAT0.A
+  A+2.A
+  DAT0=A.A
+
+RTN
+
+*X_____GFX_FUNCTS
+*SETPIX
+% R0  X
+% R1  Y
+
+% DESTR: 
+% D1 A B C 
+% R0
+
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 MN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+
+A=R0.B
+LC 03
+A=A&C.B
+B=A.B
+LC 00
+?B=C.B -> { LA 01 
+            R0=A.B }
+
+LC 01
+?B=C.B -> { LA 02 
+            R0=A.B }
+
+LC 02
+?B=C.B -> { LA 04 
+            R0=A.B }
+
+LC 03
+?B=C.B -> { LA 08 
+            R0=A.B }
+
+A=R0.B
+C=DAT1.1
+A=A!C.B
+DAT1=A.1
+
+RTN
+
+
+*CLRPIX
+% R0  X
+% R1  Y
+
+% DESTR: 
+% D1 A B C 
+% R0
+
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 MN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+
+A=R0.B
+LC 03
+A=A&C.B
+B=A.B
+LC 00
+?B=C.B -> { LA 0E
+            R0=A.B }
+
+LC 01
+?B=C.B -> { LA 0D 
+            R0=A.B }
+
+LC 02
+?B=C.B -> { LA 0B 
+            R0=A.B }
+
+LC 03
+?B=C.B -> { LA 07 
+            R0=A.B }
+
+A=R0.B
+C=DAT1.1
+A=A&C.B
+DAT1=A.1
+
+RTN
+
+*CLR_BOX
+% R0  X
+% R1  Y
+% R2  YLEN
+% R3  XLEN
+{
+  A=R0.B
+  R4=A.B
+  GOSUB CLR_VLINE
+  A=R4.B
+  A+1.B
+  R0=A.B
+  A=R3.B
+  A-1.B
+  R3=A.B
+  ?A=0.B EXIT
+  UP  
+}
+RTN
+
+*CLR_VLINE
+% R0  X
+% R1  Y
+% R2  LEN
+
+% DESTR: 
+% D1 A B C 
+% R0
+
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 MN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+
+A=R0.B
+LC 03
+A=A&C.B
+B=A.B
+LC 00
+?B=C.B -> { LA 0E
+            R0=A.B }
+
+LC 01
+?B=C.B -> { LA 0D 
+            R0=A.B }
+
+LC 02
+?B=C.B -> { LA 0B 
+            R0=A.B }
+
+LC 03
+?B=C.B -> { LA 07 
+            R0=A.B }
+
+A=R2.B
+B=A.B
+{
+  A=R0.B
+  C=DAT1.1
+  A=A&C.B
+  DAT1=A.1
+  D1+34
+  B-1.B UPNC
+}
+
+RTN
+
+
+*SET_VLINE
+% R0  X
+% R1  Y
+% R2  LEN
+
+% DESTR: 
+% D1 A B C 
+% R0
+
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 MN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+
+A=R0.B
+LC 03
+A=A&C.B
+B=A.B
+LC 00
+?B=C.B -> { LA 01 
+            R0=A.B }
+
+LC 01
+?B=C.B -> { LA 02 
+            R0=A.B }
+
+LC 02
+?B=C.B -> { LA 04 
+            R0=A.B }
+
+LC 03
+?B=C.B -> { LA 08 
+            R0=A.B }
+
+A=R2.B
+B=A.B
+{
+  A=R0.B
+  C=DAT1.1
+  A=A!C.B
+  DAT1=A.1
+  D1+34
+  B-1.B UPNC
+}
+
+RTN
+
+
+*SETSPR
+% R0  X
+% R1  Y
+% R2  IDX
+% GLOBAL SPRADR
+
+LC(5)SPRADR
+CD0EX A=DAT0.A
+AD0EX
+
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 IN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+
+A=DAT0.B % B
+R1=A.B 
+D0+2
+
+A=DAT0.B % H
+R0=A.B 
+D0+2
+
+% SKIP CNT
+D0+2
+
+% IDX
+LC 00000
+C=DAT0.B % B*H
+B=C.A
+D0+2
+A=R2.B
+CD0EX
+
+{ ?A=0.B EXIT
+C+B.A A-1.B UP }
+
+CD0EX
+
+{
+  C=0.A C=R1.B 
+  {
+    A=DAT0.B DAT1=A.B
+    D0+2 D1+2
+    C-1.B UPNC
+  }
+  C=0.A
+  C=R1.B
+  C+1.B
+  AD1EX
+  A-C.A
+  A-C.A
+  AD1EX
+  D1+34 
+  A=R0.B
+  A-1.B
+  R0=A.B
+  ?A=0.B EXIT
+  UP
+}
+RTN
+
+
+*SETSPR_MAP
+% R0  X
+% R1  Y
+% R2  IDX
+% GLOBAL SPRADR
+
+LA 00000
+A=R1.B
+LC 00008
+A=A<C.A  % Y*256
+R3=A.A
+
+LA 00000
+A=R1.B
+LC 00004
+A=A<C.A  % Y*16
+C=R3.A
+A=A+C.A  % Y*272
+LC 000AA 
+A=A+C.A  % Y*272+5*34
+
+LC 00000
+C=R0.B
+A=A+C.A
+A=A+C.A % Y*272+AA+2*X
+A+1.A   % +1
+
+D1=(5)SCRNBUF C=DAT1.A
+A=A+C.A
+AD1EX
+
+% -- 
+
+LA(5)SPRADR
+AD0EX A=DAT0.A
+AD0EX
+
+A=DAT0.B % B
+R1=A.B 
+D0+2
+
+A=DAT0.B % H
+R0=A.B 
+D0+2
+
+% SKIP CNT
+D0+2
+
+% IDX
+LC 00000
+C=DAT0.B % B*H
+B=C.A
+D0+2
+A=R2.B
+CD0EX
+
+{ ?A=0.B EXIT
+C+B.A A-1.B UP }
+
+CD0EX
+
+{
+  C=0.A C=R1.B 
+  {
+    A=DAT1.B
+    B=A.B
+    A=DAT0.B
+    A=A!B.B 
+    DAT1=A.B
+    D0+2 D1+2
+    C-1.B UPNC
+  }
+  C=0.A
+  C=R1.B
+  C+1.B
+  AD1EX
+  A-C.A
+  A-C.A
+  AD1EX
+  D1+34 
+  A=R0.B
+  A-1.B
+  R0=A.B
+  ?A=0.B EXIT
+  UP
+}
+RTN
+
+
+*SETSPR2
+% R0  X
+% R1  Y
+% R2  IDX
+% GLOBAL SPRADR
+
+LC(5)SPRADR
+CD0EX A=DAT0.A
+AD0EX
+
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 IN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+
+A=DAT0.B % B
+R3=A.B 
+D0+2
+
+A=DAT0.B % H
+R4=A.B 
+D0+2
+
+% SKIP CNT
+D0+2
+
+% IDX
+LC 00000
+C=DAT0.B % B*H
+B=C.A
+D0+2
+A=R2.B
+CD0EX
+
+{ ?A=0.B EXIT
+C+B.A A-1.B UP }
+
+CD0EX
+
+% PTRS SET --
+A=R3.B
+B=A.B
+A+B.A
+R3=A.B
+% R0=X,R1=Y,R3=B,R4=H
+
+A=R0.B
+LC 03
+A=A&C.B % X MOD 4 
+%LC 04
+%C=C-A.B
+%D=C.B % D=4-(X MOD 4)
+D=A.B % D=4-(X MOD 4)
+
+*.LOOPY
+
+  C=R3.B
+  C+1.B
+  {
+    LA 00
+    A=DAT0.1
+    A=A<D.B
+    B=A.B
+
+    A=DAT1.B
+    A=A!B.B
+    DAT1=A.B
+    D0+1
+    D1+1
+
+    C-1.B
+    UPNC
+  }
+
+D1+34
+AD1EX
+LC 00000
+C=R3.B
+A-C.A
+AD1EX
+D1-1
+D1-1
+
+C=R4.B
+C-1.B
+R4=C.B
+?C#0.B -> .LOOPY
+
+RTN
+
+
+*SETCHAR
+% R0  X
+% R1  Y
+% C.B CHAR
+
+%LA 20
+%?C#A.B -> .DOCHAR 
+%RTN
+
+*.DOCHAR
+D0=(5)FONTADR 
+A=DAT0.A AD0EX 
+LA 20
+C=C-A.B
+LA 000FF
+C=C&A.A
+CSL.A
+AD0EX A=A+C.A AD0EX
+
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 IN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+
+A=R0.B
+LC 03
+A=A&C.B % X MOD 4 
+LC 04
+C=C-A.B
+D=0.X
+D=A.B
+
+LC 05
+A=DAT0.W
+{
+  R2=C.B
+  B=A.W
+    
+  A=0.X
+  A=B.B
+  A=A<D.X    
+
+  C=DAT1.X
+  A=A!C.X  
+  DAT1=A.X
+
+  A=B.W
+  ASR.W
+  ASR.W
+  D1+34
+  C=R2.B
+  C-1.B
+  UPNC
+}
+RTN
+
+*PRINTXY
+% R0  X
+% R1  Y
+% D0  MSGADR
+
+{ 
+  C=DAT0.B
+  ?C=0.B EXIT 
+  LA 73 %7F
+  B=A.B
+  A=R0.B A+6.B R0=A.B 
+  ?A>B.B EXIT
+  
+  AD0EX R4=A.A AD0EX
+  GOSUB SETCHAR
+  A=R4.A D0=A
+  D0+2
+  UP
+}
+RTN
+
+*SCROLL
+GOSUBL SCROLLY AD0EX
+A=DAT0.B R1=A.B
+
+GOSUBL SCROLLX AD0EX
+A=DAT0.B 
+%C=R0.B
+%A+C.B
+R0=A.B
+
+GOSUBL SCROLLTXT 
+AD0EX
+
+GOSUBL SCROLLPTR
+AD1EX
+A=DAT1.A
+CD0EX
+C=C+A.A
+CD0EX
+GOSUB PRINTXY
+
+GOSUBL SCROLLX AD0EX
+A=DAT0.B A-1.B
+LC FF
+?A=C.B -> { 
+  GOSUBL SCROLLPTR
+  AD1EX
+  A=DAT1.A
+  A+2.A
+  DAT1=A.A
+  LA 05
+}
+DAT0=A.B
+
+
+GOSUBL SCROLLTXT 
+AD0EX
+
+GOSUBL SCROLLPTR
+AD1EX
+A=DAT1.A
+CD0EX
+C=C+A.A
+CD0EX
+C=DAT0.B
+?C=0.B -> {
+  LA 00000
+  DAT1=A.A
+}
+RTN
+
+
+
+% === GAME FUNCS  ===
+*X__________GAME_FUNCS
+
+*KEY_HANDLING
+
+  GOSUBL KEY
+  AD0EX
+  A=DAT0.A
+
+  ?ABIT=1.4 -> .GO_ENTER
+  ?ABIT=1.0 -> .GO_R
+  ?ABIT=1.1 -> .GO_D
+  ?ABIT=1.2 -> .GO_L
+  ?ABIT=1.3 -> .GO_U
+
+  ?ABIT=1.5 -> .GO_NEXT_LEV
+  ?ABIT=1.6 -> .GO_AGAIN
+  ?ABIT=1.7 -> .GO_END
+
+  LA 01
+  RTN
+
+*.GO_R
+  GOTO KEY_R
+
+*.GO_L
+  GOTO KEY_L
+
+*.GO_D
+  GOTO KEY_D
+
+*.GO_U
+  GOTO KEY_U
+
+*.GO_ENTER
+  GOTO KEY_ENTER
+
+*.GO_AGAIN
+  GOTO LEVEL_AGAIN
+
+*.GO_END
+  GOTOL ENDME
+
+*.GO_NEXT_LEV
+    GOTO DO_NEXT_LEV
+
+% -- KEZBRD --
+
+*SND_KEYMOV
+  LA 00080
+  LC 00008
+  D=A.A
+  BEEP2
+RTN
+
+*SND_CLRSEL
+  LA 00190
+  LC 00020
+  D=A.A
+  BEEP2
+  LA 00120
+  LC 00010
+  D=A.A
+  BEEP2
+RTN
+
+*SND_WRONG
+  LA 00090
+  LC 00020
+  D=A.A
+  BEEP2
+RTN
+
+*SND_KEYENTER
+  LA 00180
+  LC 00010
+  D=A.A
+  BEEP2
+RTN
+
+*SND_MOVERS
+  LA 00100
+  LC 00001
+  D=A.A
+  BEEP2
+RTN
+
+*SND_FXCLR
+  LC 00004
+  A=A<C.A
+  LC 00120
+  A=A+C.A
+
+  LC 00001
+  D=A.A
+  BEEP2
+RTN
+
+*KEY_R
+GOSUBL CUR_X
+AD0EX
+A=DAT0.B
+LC 0B
+?A#C.B -> {
+  GOSUBL CUR_X
+  AD0EX
+  A=DAT0.B
+  A+1.B
+  DAT0=A.B
+  GOSUB SND_KEYMOV
+  LA 01
+  RTN
+}
+
+GOSUBL CURR_MAP
+AD0EX
+D0+4
+A=DAT0.B
+R0=A.B
+
+GOSUBL MAP_XOFFS
+AD0EX
+A=DAT0.B
+C=R0.B
+
+?A#C.B -> {
+  A+1.B
+  DAT0=A.B
+  GOTO DO_MOVMAP
+}
+
+  LA 01
+RTN
+
+*KEY_L
+GOSUBL CUR_X
+AD0EX
+A=DAT0.B
+LC 00
+?A#C.B -> {
+  GOSUBL CUR_X
+  AD0EX
+  A=DAT0.B
+  A-1.B
+  DAT0=A.B
+  GOSUB SND_KEYMOV
+  LA 01
+  RTN
+}
+
+GOSUBL CURR_MAP
+AD0EX
+
+A=DAT0.B
+R0=A.B
+
+GOSUBL MAP_XOFFS
+AD0EX
+A=DAT0.B
+C=R0.B
+
+?A#C.B -> {
+  A-1.B
+  DAT0=A.B
+  GOTO DO_MOVMAP
+}
+
+  LA 01
+RTN
+
+*KEY_U
+GOSUBL CUR_Y
+AD0EX
+A=DAT0.B
+LC 00
+?A#C.B -> {
+  GOSUBL CUR_Y
+  AD0EX
+  A=DAT0.B
+  A-1.B
+  DAT0=A.B
+  GOSUB SND_KEYMOV
+  LA 01
+  RTN
+}
+
+GOSUBL CURR_MAP
+AD0EX
+D0+2
+A=DAT0.B
+R0=A.B
+
+GOSUBL MAP_YOFFS
+AD0EX
+A=DAT0.B
+C=R0.B
+
+?A#C.B -> {
+  A-1.B
+  DAT0=A.B
+  GOTO DO_MOVMAP
+}
+
+  LA 01
+RTN
+
+*KEY_D
+GOSUBL CUR_Y
+AD0EX
+A=DAT0.B
+LC 07
+?A#C.B -> {
+  GOSUBL CUR_Y
+  AD0EX
+  A=DAT0.B
+  A+1.B
+  DAT0=A.B
+  GOSUB SND_KEYMOV
+  LA 01
+  RTN
+}
+
+GOSUBL CURR_MAP
+AD0EX
+D0+6
+A=DAT0.B
+R0=A.B
+
+GOSUBL MAP_YOFFS
+AD0EX
+A=DAT0.B
+C=R0.B
+
+?A#C.B -> {
+  A+1.B
+  DAT0=A.B
+  GOTO DO_MOVMAP
+}
+  LA 01
+
+RTN
+
+*DO_MOVMAP
+  GOSUBL CLRSCR
+  GOSUB DRAW_MAP
+  GOSUBL BORDER
+  GOSUBL GRAB_MAP_G   
+  GOSUBL SWAPSCRN
+
+  GOSUBL CLRSCR
+  GOSUBL PUT_MAP_G
+  GOSUBL BORDER
+  GOSUB SND_KEYMOV
+  LA 00
+RTN
+
+
+*LEVEL_AGAIN
+    GOSUBL CLR_SELECTION
+   
+    GOSUBL MAPFX_END
+
+    GOSUBL LEVEL
+    AD0EX
+    A=DAT0.A
+    R0=A.A
+    GOSUBL SET_LEVEL
+
+    GOSUBL MAPFX_START
+    GOSUBL MOVERS
+    LA 01
+    RTN
+
+
+
+% ========
+*KEY_ENTER
+  GOSUBL GET_BLOCK
+
+  LC  2E
+  ?A=C.B -> {
+    GOSUB SND_WRONG
+    GOTO .END_ENTER
+  }
+
+  LC  49
+  ?A=C.B -> {
+    GOSUB SND_WRONG
+    GOTO .END_ENTER
+  }
+
+
+  GOSUBL BLOCKS_SEL_CNT
+  AD0EX
+  A=DAT0.B
+
+% -- FIRST BLOCK --
+  ?A=0.B -> {
+    GOSUB SND_KEYENTER
+    GOSUBL SHOW_BLOCK
+    GOSUBL SAVE_BLOCK
+    GOTO .END_ENTER
+  }  
+
+  GOSUBL GET_BLOCK
+  R0=A.B
+
+  GOSUBL BLOCKS_SELECTED
+  A+4.A
+  AD0EX
+  A=DAT0.B
+  C=R0.B
+
+% -- SAME TYPE --
+  ?A=C.B -> {
+    GOSUBL ALRDY_SAVED
+    LC 00
+  % -- NEW SEL --
+    ?A=C.B -> {
+      GOSUB SND_KEYENTER
+      GOSUBL SAVE_BLOCK    
+      GOSUBL BLOCKS_SEL_CNT
+      AD0EX
+      A=DAT0.B
+      LC 03
+      ?A=C.B -> {
+        GOTO .DO_CHECK_TRIANGLE
+      }
+      GOTO .END_ENTER      
+    }
+  % -- ALLREADY SEL --
+    GOSUB SND_CLRSEL
+    GOSUBL CLR_SELECTION
+    GOTO .END_ENTER
+  }
+
+  GOSUB SND_WRONG
+
+    
+*.END_ENTER
+  { C=IN2 ?C#0.B UP }
+  LA 01
+RTN
+
+
+
+*.DO_CHECK_TRIANGLE
+  
+  GOSUB CHECK_TRIANGLE
+  ?A=0.B -> {
+    GOSUBL CLR_SELECTION
+    LA 01
+    RTN
+  }
+
+% YEAHH
+
+  GOSUBL SCORE
+  AD0EX
+  A=DAT0.A
+  A+5.A
+  DAT0=A.A
+
+  GOSUB CLR_TRIANGLE
+
+  GOSUBL FX_MARKS_CLR
+  GOSUBL CLR_SELECTION
+
+  GOSUBL CLRSCR
+  GOSUB DRAW_MAP
+  GOSUBL BORDER
+  GOSUBL GRAB_MAP_G   
+  GOSUBL SWAPSCRN
+
+  GOSUBL CLRSCR
+  GOSUBL BORDER
+  GOSUBL PUT_MAP_G
+
+
+  GOSUB CHECK_DONE
+  
+  ?A#0.B -> {
+% -- NEXT LEVEL --
+    GOTO DO_NEXT_LEV
+  }
+
+  GOSUBL MOVERS
+  LA 01
+RTN
+
+*DO_NEXT_LEV
+    GOSUBL CLR_SELECTION
+
+    GOSUBL CUR_X
+    AD0EX
+    LA 00
+    DAT0=A.B
+
+    GOSUBL CUR_Y
+    AD0EX
+    LA 00
+    DAT0=A.B
+
+    GOSUBL MAPFX_END    
+    GOSUBL LEVEL
+    AD0EX
+    A=DAT0.A
+    A+1.A
+    R0=A.A
+    DAT0=A.A
+    GOSUBL SET_LEVEL
+    GOSUBL BONUS
+    AD0EX
+    A=DAT0.A
+    R0=A.A
+    GOSUBL SCORE
+    AD0EX
+    A=DAT0.A
+    C=R0.A
+    A+C.A
+    DAT0=A.A
+
+    GOSUBL MAPFX_START
+    GOSUBL MOVERS
+    LA 01
+    RTN
+
+
+
+*CHECK_TRIANGLE
+  GOSUBL BLOCKS_SELECTED
+  AD0EX
+
+% 0
+  LA 00000
+  A=DAT0.B % X
+  ASL.A ASL.A
+  D0+2
+  A=DAT0.B % Y
+  D0+4
+  R0=A.A
+
+% 1
+  LA 00000
+  A=DAT0.B % X
+  ASL.A ASL.A
+  D0+2
+  A=DAT0.B % Y
+  D0+4
+  R1=A.A
+
+% 2
+  LA 00000
+  A=DAT0.B % X
+  ASL.A ASL.A
+  D0+2
+  A=DAT0.B % Y
+  D0+4
+  R2=A.A
+
+% --
+
+% A)
+  LC 0FF00   % XMASK
+  A=R0.A
+  A=A&C.A
+  R3=A.A
+  A=R1.A
+  A=A&C.A % X1
+  C=R3.A  % X0  
+
+  % X0==X1
+  ?A=C.A -> {
+    % Y0==Y2
+    LC 000FF % YMASK
+    A=R0.A
+    A=A&C.A
+    R3=A.A
+    A=R2.A
+    A=A&C.A % Y2
+    C=R3.A  % Y0
+    ?A=C.A -> {
+      LA 01
+      RTN
+    }  
+    % Y1==Y2
+    LC 000FF % YMASK
+    A=R1.A
+    A=A&C.A
+    R3=A.A
+    A=R2.A
+    A=A&C.A % Y2
+    C=R3.A  % Y1
+    ?A=C.A -> {
+      LA 01
+      RTN
+    }  
+  }
+
+
+% B)
+  LC 0FF00   % XMASK
+  A=R0.A
+  A=A&C.A
+  R3=A.A
+  A=R2.A
+  A=A&C.A % X2
+  C=R3.A  % X0  
+
+  % X0==X2
+  ?A=C.A -> {
+    % Y0==Y1
+    LC 000FF % YMASK
+    A=R0.A
+    A=A&C.A
+    R3=A.A
+    A=R1.A
+    A=A&C.A % Y1
+    C=R3.A  % Y0
+    ?A=C.A -> {
+      LA 01
+      RTN
+    }  
+    % Y1==Y2
+    LC 000FF % YMASK
+    A=R1.A
+    A=A&C.A
+    R3=A.A
+    A=R2.A
+    A=A&C.A % Y2
+    C=R3.A  % Y1
+    ?A=C.A -> {
+      LA 01
+      RTN
+    }  
+  }
+
+
+% C)
+  LC 0FF00   % XMASK
+  A=R1.A
+  A=A&C.A
+  R3=A.A
+  A=R2.A
+  A=A&C.A % X2
+  C=R3.A  % X1  
+
+  % X1==X2
+  ?A=C.A -> {
+    % Y0==Y1
+    LC 000FF % YMASK
+    A=R0.A
+    A=A&C.A
+    R3=A.A
+    A=R1.A
+    A=A&C.A % Y1
+    C=R3.A  % Y0
+    ?A=C.A -> {
+      LA 01
+      RTN
+    }  
+    % Y0==Y2
+    LC 000FF % YMASK
+    A=R0.A
+    A=A&C.A
+    R3=A.A
+    A=R2.A
+    A=A&C.A % Y2
+    C=R3.A  % Y0
+    ?A=C.A -> {
+      LA 01
+      RTN
+    }  
+  }
+
+  LA 00
+  
+RTN
+
+
+*CLR_TRIANGLE
+  GOSUBL BLOCKS_SELECTED
+  AD0EX
+
+% 0
+  A=DAT0.B % X
+  R0=A.B
+  D0+2
+  A=DAT0.B % Y
+  R1=A.B
+  D0+4
+
+  GOSUB CLR_BLOCK
+  
+
+% 1
+  A=DAT0.B % X
+  R0=A.B
+  D0+2
+  A=DAT0.B % Y
+  R1=A.B
+  D0+4
+
+  GOSUB CLR_BLOCK
+
+% 2
+  A=DAT0.B % X
+  R0=A.B
+  D0+2
+  A=DAT0.B % Y
+  R1=A.B
+  D0+4
+
+  GOSUB CLR_BLOCK
+
+RTN
+
+
+*CLR_BLOCK
+  LA 00000
+  A=R1.B
+  LC 00005
+  A=A<C.A  % Y*32   
+  LC 00000
+  C=R0.B
+  A+C.A
+  LC 00001
+  A=A<C.A
+  A+12.A
+  R0=A.A % *BLOCK
+
+  GOSUBL CURR_MAP
+  C=R0.A
+  A+C.A
+
+  AD1EX
+  LA 2E
+  DAT1=A.B
+RTN
+
+
+
+
+*CHECK_DONE
+  GOSUBL CURR_MAP
+  A+12.A
+  AD0EX
+
+  LA 00
+  LC 001FF
+  {
+    LA 49
+    B=A.B    
+    A=DAT0.B
+    ?A=B.B -> {
+      GOTO .SKTST
+    }
+
+    LA 4A
+    B=A.B    
+    A=DAT0.B
+    ?A=B.B -> {
+      GOTO .SKTST
+    }
+
+    LA 4B
+    B=A.B    
+    A=DAT0.B
+    ?A=B.B -> {
+      GOTO .SKTST
+    }
+
+    LA 2E
+    B=A.B    
+    A=DAT0.B
+    ?A#B.B -> {
+      LA 00
+      RTN
+    }
+
+  *.SKTST
+    D0+2
+    C-1.A UPNC
+  }   
+
+  LA 01  
+RTN
+
+
+*INITVARS
+
+  A=B.A
+  R0=A.A
+
+  LC 01600
+  ?D<C.A -> {
+    GOTOL ENDME
+  }
+
+  % B=STRT
+  GOSUBL SCRN
+  AD0EX
+  A=R0.A
+  ASR.A 
+  A+1.A
+  ASL.A
+
+  DAT0=A.A  
+
+  GOSUBL CUR_X
+  AD0EX
+  LA 00
+  DAT0=A.B
+
+  GOSUBL CUR_Y
+  AD0EX
+  LA 00
+  DAT0=A.B
+
+  GOSUBL LEVEL
+  AD0EX
+  LA 00000
+  DAT0=A.A
+
+  GOSUBL SCORE
+  AD0EX
+  LA 00000
+  DAT0=A.A
+RTN
+
+
+*DRAW_MAP
+GOSUBL CURR_MAP
+A+12.A
+R2=A.A
+
+GOSUBL MAP_YOFFS
+AD0EX
+LA 00000
+A=DAT0.B
+LC 00005
+A=A<C.A
+R1=A.A
+
+GOSUBL MAP_XOFFS
+AD0EX
+LA 00000
+A=DAT0.B
+C=R1.A
+A+C.A
+R1=A.A
+
+LC 00001
+A=A<C.A
+R1=A.A
+
+GOSUBL MAP_PTR
+AD0EX
+A=R1.A
+C=R2.A
+A+C.A
+DAT0=A.A
+
+
+GOSUBL MAP_X
+AD0EX
+A=0.B
+DAT0=A.B
+
+GOSUBL MAP_Y
+AD0EX
+A=0.B
+DAT0=A.B
+
+*.XLOOP
+  GOSUBL MAP_PTR
+  AD0EX
+  A=DAT0.A
+  AD0EX
+  A=DAT0.B
+  R2=A.B % BLOCK
+
+  GOSUBL MAP_X
+  AD0EX
+  A=DAT0.B % X
+  R0=A.B
+  
+  GOSUBL MAP_Y
+  AD0EX
+  A=DAT0.B % Y
+  R1=A.B
+
+  GOSUBL SETBLOCK_XY_2
+
+  GOSUBL MAP_PTR
+  AD0EX
+  A=DAT0.A
+  A+2.A
+  DAT0=A.A
+
+  GOSUBL MAP_X
+  AD0EX
+  A=DAT0.B
+  A+1.B
+  LC 0B
+  ?A>C.B -> .INCY 
+  DAT0=A.B
+  GOTO .XLOOP
+
+*.INCY  
+  LA 00
+  DAT0=A.B
+
+  GOSUBL MAP_PTR
+  AD0EX
+  A=DAT0.A
+  A+40.A
+  DAT0=A.A
+
+  GOSUBL MAP_Y
+  AD0EX
+  A=DAT0.B
+  A+1.B
+  LC 07
+  ?A>C.B -> .ENDL 
+  DAT0=A.B
+  GOTO .XLOOP
+
+*.ENDL    
+
+RTN      
+
+*SETBLOCK_XY_2
+  A=R2.B
+
+  LC 2E
+  ?A=C.B -> {
+    LA 00
+    R2=A.B
+    GOTO .DOIT
+  }
+
+  A=R2.B
+  LC F0
+  ?A>C.B -> {
+    LC F0
+    A-C.B
+    R2=A.B
+    GOTO .DOIT
+  }    
+
+  A=R2.B
+  LC 40
+  ?A>C.B -> {
+    LC 40
+    A-C.B
+    R2=A.B
+    GOTO .DOIT
+  }    
+
+*.DOIT
+  GOSUBL SPR_BLOCKS
+  GOSUBL SETSPR_MAP
+
+RTN
+
+
+*SETBLOCK_XY
+  A=R2.B
+
+  LC 2E
+  ?A=C.B -> {
+    LA 00
+    R2=A.B
+    GOTO .DOIT
+  }
+
+  A=R2.B
+  LC F0
+  ?A>C.B -> {
+    LC F0
+    A-C.B
+    R2=A.B
+    GOTO .DOIT
+  }    
+
+  A=R2.B
+  LC 40
+  ?A>C.B -> {
+    LC 40
+    A-C.B
+    R2=A.B
+    GOTO .DOIT
+  }    
+
+*.DOIT
+  GOSUBL SPR_BLOCKS 
+  GOSUBL SETSPR2
+
+RTN
+
+
+*SET_CURSOR
+  GOSUBL CUR_X
+  AD0EX
+  LA 00000
+  A=DAT0.B % X
+  LC 00003
+  A=A<C.A  % X*8   
+  A+4.A    % XOFFS
+  R0=A.A
+  
+  GOSUBL CUR_Y
+  AD0EX
+  LA 00000
+  A=DAT0.B % Y
+  LC 00003
+  A=A<C.A  % Y*8   
+  A+5.A    % YOFFS
+  R1=A.B
+
+  GOSUBL CUR_IDX
+  AD0EX
+  A=DAT0.B
+
+  R2=A.B
+  GOSUBL SPR_CURSORS 
+  GOSUBL SETSPR2
+
+RTN
+
+
+*SET_BLOCK
+  A=R0.B % X
+  LC 00003
+  A=A<C.A  % X*8   
+  A+4.A    % XOFFS
+  R0=A.A
+  
+  A=R1.B % Y
+  LC 00003
+  A=A<C.A  % Y*8   
+  A+5.A    % YOFFS
+  R1=A.B
+
+  GOSUB SETBLOCK_XY
+
+RTN
+
+*DEL_BLOCK
+  A=R0.B % X
+  LC 00003
+  A=A<C.A  % X*8   
+  A+4.A    % XOFFS
+  R0=A.A
+  
+  A=R1.B % Y
+  LC 00003
+  A=A<C.A  % Y*8   
+  A+5.A    % YOFFS
+  R1=A.B
+
+  LA 08
+  R2=A.A
+  LA 09
+  R3=A.A
+  GOSUBL CLR_BOX  
+
+RTN
+          
+
+*SHOW_BLOCK
+  LA 0006C
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  R1=A.B
+  LA 00009
+  R2=A.A
+  LA 00018
+  R3=A.A
+  GOSUBL CLR_BOX
+  GOSUBL SWAPSCRN
+
+  LA 0006C
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  R1=A.B
+  LA 00009
+  R2=A.A
+  LA 00018
+  R3=A.A
+  GOSUBL CLR_BOX
+  GOSUBL SWAPSCRN
+
+  GOSUB GET_BLOCK
+  R2=A.B % BLOCK
+
+  LA 00072
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  R1=A.B
+  GOSUBL SETBLOCK_XY
+
+  LA 0006C
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  A+2.B
+  R1=A.B
+  LA 00
+  R2=A.B
+  GOSUBL SPR_BRR
+  GOSUBL SETSPR2
+  GOSUBL SWAPSCRN
+
+  GOSUB GET_BLOCK
+  R2=A.B % BLOCK
+  LA 00072
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  R1=A.B
+  GOSUBL SETBLOCK_XY
+
+
+  LA 0006C
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  A+2.B
+  R1=A.B
+  LA 00
+  R2=A.B
+  GOSUBL SPR_BRR
+  GOSUBL SETSPR2
+  GOSUBL SWAPSCRN
+RTN
+
+
+*SAVE_BLOCK  
+  GOSUBL BLOCKS_SEL_CNT
+  AD0EX
+  LA 00000
+  A=DAT0.B
+  C=A.A
+  A+C.A
+  A+C.A
+  A+C.A
+  A+C.A
+  A+C.A
+  R0=A.A  
+  GOSUBL BLOCKS_SELECTED
+  C=R0.A
+  A+C.A
+  AD1EX
+
+  GOSUBL CUR_X
+  AD0EX A=DAT0.B
+  R0=A.B
+  GOSUBL MAP_XOFFS
+  AD0EX A=DAT0.B
+  C=R0.B
+  A+C.B
+  DAT1=A.B D1+2
+
+  GOSUBL CUR_Y
+  AD0EX A=DAT0.B
+  R0=A.B
+  GOSUBL MAP_YOFFS
+  AD0EX A=DAT0.B
+  C=R0.B
+  A+C.B
+  DAT1=A.B D1+2
+
+  GOSUBL GET_BLOCK
+  DAT1=A.B
+
+%
+
+  GOSUBL BLOCKS_SEL_CNT
+  AD0EX
+  A=DAT0.B
+  A+1.B
+  DAT0=A.B
+
+RTN
+
+*ALRDY_SAVED
+  GOSUBL BLOCKS_SELECTED
+  AD0EX
+
+  GOSUBL CUR_X
+  AD1EX A=DAT1.B
+  R0=A.B
+  GOSUBL MAP_XOFFS
+  AD1EX A=DAT1.B
+  C=R0.B
+  A+C.B
+  R0=A.B
+
+
+  GOSUBL CUR_Y
+  AD1EX A=DAT1.B
+  R1=A.B
+  GOSUBL MAP_YOFFS
+  AD1EX A=DAT1.B
+  C=R1.B
+  A+C.B
+  R1=A.B
+
+  A=DAT0.B D0+2
+  C=R0.B
+  ?A=C.B -> {
+    A=DAT0.B D0+2 D0+2
+    C=R1.B
+    ?A=C.B -> {
+      LA 01
+      RTN
+    }
+    GOTO .CHECK2
+  }
+
+  D0+2 D0+2
+
+*.CHECK2
+  A=DAT0.B D0+2
+  C=R0.B
+  ?A=C.B -> {
+    A=DAT0.B D0+2 D0+2
+    C=R1.B
+    ?A=C.B -> {
+      LA 01
+      RTN
+    }
+    GOTO .CHECK3
+  }
+
+  D0+2 D0+2
+
+*.CHECK3
+  A=DAT0.B D0+2
+  C=R0.B
+  ?A=C.B -> {
+    A=DAT0.B D0+2 D0+2
+    C=R1.B
+    ?A=C.B -> {
+      LA 01
+      RTN
+    }
+  }
+
+  LA 00
+  
+RTN
+
+
+*GET_BLOCK
+  GOSUBL CUR_X
+  AD0EX
+  LA 00000
+  A=DAT0.B % X
+  R0=A.A
+  GOSUBL MAP_XOFFS
+  AD0EX
+  LA 00000
+  A=DAT0.B % X
+  C=R0.A
+  A+C.A
+  R0=A.A  
+
+  GOSUBL CUR_Y
+  AD0EX
+  LA 00000
+  A=DAT0.B % Y
+  R1=A.A
+  GOSUBL MAP_YOFFS
+  AD0EX
+  LA 00000
+  A=DAT0.B % Y
+  C=R1.A
+  A=A+C.A
+
+  LC 00005
+  A=A<C.A  % Y*32
+  C=R0.A
+  A+C.A
+  LC 00001
+  A=A<C.A
+  A+12.A
+  R0=A.A % *BLOCK
+
+  GOSUBL CURR_MAP
+
+  C=R0.A
+  A+C.A
+
+  AD0EX
+  A=DAT0.B
+RTN
+
+*GET_BLOCK_XY
+  LC 00000
+  C=R0.B
+  R4=C.A  
+
+  LA 00000 
+  A=R1.B
+
+  LC 00005
+  A=A<C.A  % Y*32
+  C=R4.A
+  A+C.A
+  LC 00001
+  A=A<C.A
+  A+12.A
+  R4=A.A % *BLOCK
+
+  GOSUBL CURR_MAP
+
+  C=R4.A
+  A+C.A
+
+  AD0EX
+  A=DAT0.B
+RTN
+
+
+*CLR_SELECTION
+  LA 00072
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  R1=A.B
+  LA 00009
+  R2=A.A
+  R3=A.A
+  GOSUBL CLR_BOX
+  GOSUBL SWAPSCRN
+
+  LA 00072
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  R1=A.B
+  LA 00009
+  R2=A.A
+  R3=A.A
+  GOSUBL CLR_BOX
+  GOSUBL SWAPSCRN
+
+
+  GOSUBL BLOCKS_SEL_CNT
+  AD0EX
+  LA 00000
+  DAT0=A.B
+
+  GOSUBL BLOCKS_SELECTED
+  AD0EX
+  LA 0000000000000000
+  DAT0=A.W
+  D0+16
+  DAT0=A.B  
+RTN
+
+
+*ANI_CURSOR
+  GOSUBL CUR_IDX
+  AD0EX
+  A=DAT0.B
+
+  A+1.B
+  LC 08
+  ?A=C.B -> {
+    LA 00
+  }
+
+  DAT0=A.B
+RTN
+
+
+*SET_MARKS
+  GOSUBL BLOCKS_SEL_CNT
+  AD0EX
+  A=DAT0.B
+  ?A=0.B -> { RTN }
+  
+  R2=A.B % #BLOCKS
+  GOSUBL TMP_I
+  AD0EX
+  A=R2.B
+  DAT0=A.B
+
+  GOSUBL BLOCKS_SELECTED
+  R3=A.A % *BLOCKS XYV
+  GOSUBL TMP_PTR1
+  AD0EX
+  A=R3.A
+  DAT0=A.A
+
+*.LOOP
+  GOSUBL TMP_PTR1
+  AD0EX
+  A=DAT0.A
+
+  AD0EX
+  LA 00000
+  A=DAT0.B % X
+  R0=A.A
+  D0+2  
+  LC 00000
+  C=DAT0.B % Y
+  R1=C.A
+
+  CD0EX C+4.A
+  R3=C.A % *NEXT
+  GOSUBL TMP_PTR1
+  AD0EX
+  A=R3.A
+  DAT0=A.A
+
+  GOSUBL GET_BLOCK_XY
+  R4=A.B
+
+  GOSUBL MAP_XOFFS
+  AD0EX
+  LC 00000
+  C=DAT0.B
+  A=R0.A
+  A-C.B
+  LC 0B
+  ?A>C.B -> {
+    GOTO .SKIPME
+  }
+
+  LC 00003
+  A=A<C.A  % X*8   
+  A+4.A    % XOFFS
+  R0=A.A
+  
+  GOSUBL MAP_YOFFS
+  AD0EX
+  LC 00000
+  C=DAT0.B
+  A=R1.A
+  A-C.B
+  LC 07
+  ?A>C.B -> {
+    GOTO .SKIPME
+  }
+  LC 00003
+  A=A<C.A  % Y*8   
+  A+5.A    % YOFFS
+  R1=A.B
+
+  GOSUBL CUR_IDX_MARK
+  AD0EX
+  A=DAT0.B
+
+  R2=A.B
+  GOSUBL SPR_CURSORS_MARK1
+  A=R4.B
+  LC 43
+  ?A=C.B -> {
+    GOSUBL SPR_CURSORS_MARK2 
+  }
+  LC 4C
+  ?A=C.B -> {
+    GOSUBL SPR_CURSORS_MARK2 
+  }
+  GOSUBL SETSPR2
+
+*.SKIPME
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.B
+  A-1.B
+  DAT0=A.B
+
+  ?A#0.B -> {
+    GOTO .LOOP
+  }
+
+% --
+
+  GOSUBL CUR_IDX_MARK
+  AD0EX
+  A=DAT0.B
+  A+1.B
+  LC 08 % 0C
+  ?A=C.B -> {
+    LA 00
+  }
+  DAT0=A.B
+
+RTN
+
+
+*FX_MARKS_CLR
+  GOSUBL CUR_IDX_FX
+  AD0EX
+  LA 00
+  DAT0=A.B
+
+  GOSUBL CLRSCR
+  GOSUBL DRAW_MAP
+  GOSUBL BORDER
+  GOSUBL GRAB_MAP_G
+  GOSUBL SET_MARKS
+
+  GOSUBL SWAPSCRN
+  GOSUBL CLRSCR
+  GOSUBL PUT_MAP_G
+  GOSUBL BORDER
+
+
+*.BIGLOOP
+  GOSUBL PUT_MAP_G
+%  GOSUBL BORDER
+
+  LA 03
+  R2=A.B % #BLOCKS
+  GOSUBL TMP_I
+  AD0EX
+  A=R2.B
+  DAT0=A.B
+
+  GOSUBL BLOCKS_SELECTED
+  R3=A.A % *BLOCKS XYV
+  GOSUBL TMP_PTR1
+  AD0EX
+  A=R3.A
+  DAT0=A.A
+
+*.LOOP
+  GOSUBL TMP_PTR1
+  AD0EX
+  A=DAT0.A
+
+  AD0EX
+  LA 00000
+  A=DAT0.B % X
+  R0=A.A
+  D0+2  
+  LC 00000
+  C=DAT0.B % Y
+  R1=C.A
+
+  CD0EX C+4.A
+  R3=C.A % *NEXT
+  GOSUBL TMP_PTR1
+  AD0EX
+  A=R3.A
+  DAT0=A.A
+
+  GOSUBL MAP_XOFFS
+  AD0EX
+  LC 00000
+  C=DAT0.B
+  A=R0.A
+  A-C.B
+  LC 0B
+  ?A>C.B -> {
+    GOTO .SKIPME
+  }
+
+  LC 00003
+  A=A<C.A  % X*8   
+  A+4.A    % XOFFS
+  R0=A.A
+  
+  GOSUBL MAP_YOFFS
+  AD0EX
+  LC 00000
+  C=DAT0.B
+  A=R1.A
+  A-C.B
+  LC 07
+  ?A>C.B -> {
+    GOTO .SKIPME
+  }
+  LC 00003
+  A=A<C.A  % Y*8   
+  A+5.A    % YOFFS
+  R1=A.B
+
+  GOSUBL CUR_IDX_FX
+  AD0EX
+  A=DAT0.B
+
+  R2=A.B
+
+  GOSUBL SPR_CURSORS_FX
+  GOSUBL SETSPR2
+
+*.SKIPME
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.B
+  A-1.B
+  DAT0=A.B
+
+  ?A#0.B -> {
+    GOTO .LOOP
+  }
+
+% --
+%  GOSUBL ANI_CURSOR
+%  GOSUBL SET_CURSOR
+  GOSUBL SWAPSCRN
+
+  GOSUBL CUR_IDX_FX
+  AD0EX
+  LA 00000
+  A=DAT0.B
+  A+1.B
+  DAT0=A.B
+
+  LC 05
+  ?A=C.B -> {
+    LA 00
+    DAT0=A.B
+
+    GOSUBL CUR_IDX
+    AD0EX
+    LA 04
+    DAT0=A.B
+
+    RTN
+  }
+
+  LC 02000 GOSLOW
+  GOSUBL SND_FXCLR
+  GOTO .BIGLOOP  
+
+RTN
+
+
+*GRAB_MAP_G
+  GOSUBL MAP_GFX_BUF
+  AD1EX
+
+  D0=(5)SCRNBUF 
+  A=DAT0.A
+  LC 000AA
+  A+C.A
+  AD0EX
+
+  LC 40
+  {
+    A=DAT0.W 
+    DAT1=A.W
+    D0+16 D1+16
+
+    A=DAT0.A
+    DAT1=A.A
+    D0+5 D1+5
+
+    A=DAT0.A
+    DAT1=A.A
+    D0+5 D1+5
+
+    D0+8 D1+8
+
+    C-1.B UPNC
+  }
+
+RTN
+
+
+*PUT_MAP_G
+  GOSUBL MAP_GFX_BUF
+  AD1EX
+
+  D0=(5)SCRNBUF 
+  A=DAT0.A
+  LC 000AA
+  A+C.A
+  AD0EX
+
+  LC 40
+  {
+    A=DAT1.W 
+    DAT0=A.W
+    D0+16 D1+16
+
+    A=DAT1.A
+    DAT0=A.A
+    D0+5 D1+5
+
+    A=DAT1.A
+    DAT0=A.A
+    D0+5 D1+5
+
+    D0+8 D1+8
+
+    C-1.B UPNC
+}
+
+RTN
+
+*BORDER
+GOSUBL SPR_UP
+LA 00
+R0=A.A
+LA 02
+R1=A.A
+LA 00
+R2=A.A
+GOSUBL SETSPR2
+
+GOSUBL SPR_DN
+LA 00
+R0=A.A
+LA 44
+R1=A.A
+LA 00
+R2=A.A
+GOSUBL SETSPR2
+LA 01
+R0=A.A
+LA 03
+R1=A.A
+LA 40
+R2=A.A
+GOSUBL SET_VLINE 
+
+LA 67
+R0=A.A
+LA 03
+R1=A.A
+LA 40
+R2=A.A
+GOSUBL SET_VLINE 
+
+% --
+
+GOSUBL SPR_LEV_SCO
+LA 6C
+R0=A.B
+LA(2) LEV_POS
+R1=A.B
+LA 00
+R2=A.B
+GOSUBL SETSPR2
+
+GOSUBL LEVEL
+AD0EX
+A=DAT0.A
+A+1.A
+GOSUBL HEX2DEC
+LC 6C
+R0=C.B
+LC(2) LEV_POS
+C+6.B
+R1=C.B
+GOSUBL PRINT_NUM_4
+
+
+GOSUBL SPR_LEV_SCO
+LA 6C 
+R0=A.B
+LA(2) SCO_POS
+R1=A.B
+LA 01
+R2=A.B
+GOSUBL SETSPR2
+
+GOSUBL SPR_PLUS
+LA 7A 
+R0=A.B
+LA(2) SCO_POS
+A+14.B
+R1=A.B
+LA 00
+R2=A.B
+GOSUBL SETSPR2
+
+
+GOSUBL SCORE
+AD0EX
+A=DAT0.A
+GOSUBL HEX2DEC
+LC 6C
+R0=C.B
+LC(2) SCO_POS
+C+6.B
+R1=C.B
+GOSUBL PRINT_NUM_4
+
+GOSUBL BONUS
+AD0EX
+A=DAT0.A    
+GOSUBL HEX2DEC
+LC 6C
+R0=C.B
+LC(2) BON_POS
+R1=C.B
+GOSUBL PRINT_NUM_4
+
+  LA 0006F
+  R0=A.A
+  LA 00000
+  LA(2) BLK_POS
+  A+2.B
+  R1=A.B
+  LA 01
+  R2=A.B
+  GOSUBL SPR_BRR
+  GOSUBL SETSPR2
+
+RTN
+
+*SET_LEVEL
+% R0.A = LEVEL
+
+  GOSUBL LEVEL
+  AD0EX
+  A=R0.A
+  DAT0=A.A
+
+  LC 00009
+  A=A<C.A
+  R1=A.A   % L*512
+
+  A=R0.A
+  LC 00002
+  A=A<C.A  % L*4
+  C=R1.A
+  A+C.A    % L*(512+4)
+  R1=A.A
+
+  A=R0.A
+  LC 00001
+  A=A<C.A  % L*2
+  C=R1.A
+  A+C.A % L*(512+4+2)
+  R1=A.A
+
+  LC 00001
+  A=A<C.A
+  R1=A.A
+
+  GOSUBL LEVEL_MAPS
+  C=R1.A
+  A+C.A
+  AD0EX
+
+  GOSUBL CURR_MAP
+  AD1EX
+
+  LC 00205
+  {
+    A=DAT0.B
+    DAT1=A.B
+    D0+2 D1+2
+    C-1.A UPNC
+  }
+  
+  GOSUBL BONUS
+  AD0EX
+  LA 00064
+  DAT0=A.A
+
+% --
+
+  GOSUBL CURR_MAP
+  AD0EX
+  D0+8
+  A=DAT0.B
+  R0=A.B
+  D0+2
+  A=DAT0.B
+  R1=A.B
+
+    GOSUBL MAP_XOFFS
+    AD0EX
+    A=R0.B
+    DAT0=A.B
+
+    GOSUBL MAP_YOFFS
+    AD0EX
+    A=R1.B
+    DAT0=A.B
+
+RTN
+
+
+*HEX2DEC
+% I: A.A < 99999 
+% O: A.A
+
+  R0=A.A
+
+  LA 00000
+  R1=A.A
+
+% 10000
+  A=R0.A
+  LC 02710
+  DIV.A
+  R0=A.A % REMAINDER
+
+  LA 10000
+  MULT
+  R1=A.A
+
+% 1000
+  A=R0.A
+  LC 003E8
+  DIV.A
+  R0=A.A % REMAINDER
+
+  LA 01000
+  MULT
+  C=R1.A
+  A+C.A 
+  R1=A.A
+
+% 100
+  A=R0.A
+  LC 00064
+  DIV.A
+  R0=A.A % REMAINDER
+
+  LA 00100
+  MULT
+  C=R1.A
+  A+C.A 
+  R1=A.A
+
+% 10
+  A=R0.A
+  LC 0000A
+  DIV.A
+  R0=A.A % REMAINDER
+
+  LA 00010
+  MULT
+  C=R1.A
+  A+C.A
+  C=R0.A
+  A+C.A 
+  R1=A.A
+RTN
+
+*PRINT_NUM_2
+% A.B = NUM
+% R0  = X
+% R1  = Y
+
+  R2=A.B
+  GOSUBL TMP_I
+  AD0EX
+  A=R2.B
+  DAT0=A.B
+
+  GOSUBL TMP_II
+  AD0EX
+  LA 00000
+  A=R0.B ASL.A ASL.A
+  A=R1.B
+  DAT0=A.A
+
+% 1
+  GOSUBL FONT_NUMS
+  A=R2.B
+  ASR.B
+  R2=A.B
+  GOSUBL SETSPR2
+  
+% 2
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  A+6.B
+  R0=A.B
+
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.B
+  LC 0F
+  A=A&C.B
+  R2=A.B
+
+  GOSUBL SETSPR2
+    
+RTN
+
+*PRINT_NUM_5
+% A.A = NUM
+% R0  = X
+% R1  = Y
+
+  R2=A.A
+  GOSUBL TMP_I
+  AD0EX
+  A=R2.A
+  DAT0=A.A
+
+  GOSUBL TMP_II
+  AD0EX
+  LA 00000
+  A=R0.B ASL.A ASL.A
+  A=R1.B
+  DAT0=A.A
+
+% 1
+  GOSUBL FONT_NUMS
+  A=R2.A
+  ASR.A ASR.A ASR.A
+  ASR.A
+  R2=A.B
+  GOSUBL SETSPR2
+  
+% 2
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  A+6.B
+  R0=A.B
+  
+
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.A
+  ASR.A ASR.A ASR.A
+  LC 0F
+  A=A&C.B
+  R2=A.B
+  GOSUBL SETSPR2
+    
+% 3
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  A+12.B
+  R0=A.B
+
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.A
+  ASR.A ASR.A
+  LC 0F
+  A=A&C.B
+  R2=A.B
+  GOSUBL SETSPR2
+    
+% 4
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  A+18.B
+  R0=A.B
+
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.A
+  ASR.A
+  LC 0F
+  A=A&C.B
+  R2=A.B
+  GOSUBL SETSPR2
+
+% 5
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  A+24.B
+  R0=A.B
+
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.A
+  LC 0F
+  A=A&C.B
+  R2=A.B
+  GOSUBL SETSPR2
+        
+RTN
+
+
+*PRINT_NUM_4
+% A.A = NUM
+% R0  = X
+% R1  = Y
+
+  R2=A.A
+  GOSUBL TMP_I
+  AD0EX
+  A=R2.A
+  DAT0=A.A
+
+  GOSUBL TMP_II
+  AD0EX
+  LA 00000
+  A=R0.B ASL.A ASL.A
+  A=R1.B
+  DAT0=A.A
+
+% 1
+  GOSUBL FONT_NUMS
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  R0=A.B
+  
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.A
+  ASR.A ASR.A ASR.A
+  LC 0F
+  A=A&C.B
+  R2=A.B
+  GOSUBL SETSPR2
+    
+% 2
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  A+6.B
+  R0=A.B
+
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.A
+  ASR.A ASR.A
+  LC 0F
+  A=A&C.B
+  R2=A.B
+  GOSUBL SETSPR2
+    
+% 3
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  A+12.B
+  R0=A.B
+
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.A
+  ASR.A
+  LC 0F
+  A=A&C.B
+  R2=A.B
+  GOSUBL SETSPR2
+
+% 4
+  GOSUBL TMP_II
+  AD0EX
+  A=DAT0.A
+  R1=A.B
+  ASR.A ASR.A
+  A+18.B
+  R0=A.B
+
+  GOSUBL TMP_I
+  AD0EX
+  A=DAT0.A
+  LC 0F
+  A=A&C.B
+  R2=A.B
+  GOSUBL SETSPR2
+        
+RTN
+
+
+*DO_BONUS
+  GOSUBL TIMER1
+  AD0EX
+  A=DAT0.A
+  A+1.A
+ 
+  LC 00010
+  ?A#C.A -> {
+    DAT0=A.A
+    RTN
+  }
+
+  LA 00000
+  DAT0=A.A
+
+  GOSUBL BONUS
+  AD0EX
+  A=DAT0.A
+
+  ?A=0.A -> { RTN }
+
+A-5.A
+DAT0=A.A
+
+
+LC 6C
+R0=C.B
+LC(2) BON_POS
+R1=C.B
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 MN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+LA 00000
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+
+GOSUBL BONUS
+AD0EX
+A=DAT0.A    
+GOSUBL HEX2DEC
+LC 6C
+R0=C.B
+LC(2) BON_POS
+R1=C.B
+GOSUBL PRINT_NUM_4
+GOSUBL V_SWAPSCRN
+
+LC 6C
+R0=C.B
+LC(2) BON_POS
+R1=C.B
+D1=(5)SCRNBUF A=DAT1.A
+AD1EX
+LA 00000
+A=R1.B
+LC 00005
+A=A<C.A % Y*32 IN A
+CD1EX
+C=C+A.A
+LA 00001
+B=A.A
+LA 00000
+A=R1.B
+A=A<B.A % Y*2 MN A
+C=C+A.A
+LA 00000
+LA 02
+B=A.B
+A=R0.B
+A=A>B.B
+C=C+A.A
+CD1EX   % Y*34+X/4
+LA 00000
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+DAT1=A.A D1+5 DAT1=A.B D1-5 D1+34
+
+GOSUBL BONUS
+AD0EX
+A=DAT0.A    
+GOSUBL HEX2DEC
+LC 6C
+R0=C.B
+LC(2) BON_POS
+R1=C.B
+GOSUBL PRINT_NUM_4
+GOSUBL V_SWAPSCRN    
+    
+RTN
+
+
+*MAPFX_START
+  GOSUBL MAPFX_V10
+  AD0EX
+  LA 00004
+  DAT0=A.A
+
+  GOSUBL MAPFX_V11
+  AD0EX
+  LA 0000C
+  DAT0=A.A
+
+  GOSUBL CLRSCR
+  GOSUBL DRAW_MAP
+  GOSUBL BORDER
+  GOSUBL GRAB_MAP_G   
+
+*.LOOP
+  GOSUBL MAPFX_V10
+  AD0EX
+  A=DAT0.A
+  R0=A.A
+
+  GOSUBL MAPFX_VTMP
+  AD0EX
+  A=R0.A
+  DAT0=A.A
+
+  GOSUBL CLRSCR
+  GOSUBL PUT_MAP_G  
+  GOSUBL BORDER
+
+*.LOOP_10
+  GOSUBL MAPFX_VTMP
+  AD0EX
+  A=DAT0.A
+  A-1.B
+  LC 00003
+  A=A<C.A  % *8   
+  A+5.A    % OFFS
+  R1=A.B
+
+  LA 00004
+  R0=A.B
+    
+  LA 00
+  R2=A.B    
+  GOSUBL SPR_MAPFX_FULL 
+  GOSUBL SETSPR2
+  
+  GOSUBL MAPFX_VTMP
+  AD0EX
+  C=DAT0.A
+  LA 00008
+  A-C.B
+  LC 00003
+  A=A<C.A  % *8   
+  A+5.A    % OFFS
+  R1=A.B
+
+  LA 00004
+  R0=A.B
+    
+  LA 00
+  R2=A.B    
+  GOSUBL SPR_MAPFX_FULL 
+  GOSUBL SETSPR2
+
+  GOSUBL MAPFX_VTMP
+  AD0EX
+  A=DAT0.A
+  A-1.A
+  DAT0=A.A
+
+  ?A#0.A -> {
+    GOTO .LOOP_10
+  }
+
+% --
+  GOSUBL SWAPSCRN    
+
+%  LC 00100 GOSLOW
+
+  GOSUBL MAPFX_V10
+  AD0EX
+  A=DAT0.A
+  A-1.A
+  DAT0=A.A
+
+  ?A#0.A -> {
+    GOTO .LOOP
+  }
+  
+% --
+  GOSUBL CLRSCR
+  GOSUBL PUT_MAP_G  
+  GOSUBL BORDER
+  GOSUBL SWAPSCRN 
+
+  GOSUBL CLRSCR
+  GOSUBL PUT_MAP_G  
+  GOSUBL BORDER
+  GOSUBL SWAPSCRN 
+
+RTN
+
+*MAPFX_END
+  GOSUBL MAPFX_V10
+  AD0EX
+  LA 00001
+  DAT0=A.A
+
+  GOSUBL MAPFX_V11
+  AD0EX
+  LA 0000C
+  DAT0=A.A
+
+  GOSUBL CLRSCR
+  GOSUBL DRAW_MAP
+  GOSUBL GRAB_MAP_G   
+
+*.LOOP
+  GOSUBL MAPFX_V10
+  AD0EX
+  A=DAT0.A
+  R0=A.A
+
+  GOSUBL MAPFX_VTMP
+  AD0EX
+  A=R0.A
+  DAT0=A.A
+
+  GOSUBL PUT_MAP_G  
+  GOSUBL BORDER
+
+*.LOOP_10
+  GOSUBL MAPFX_VTMP
+  AD0EX
+  A=DAT0.A
+  A-1.B
+  LC 00003
+  A=A<C.A  % *8   
+  A+5.A    % OFFS
+  R1=A.B
+
+  LA 00004
+  R0=A.B
+    
+  LA 00
+  R2=A.B    
+  GOSUBL SPR_MAPFX_FULL 
+  GOSUBL SETSPR2
+  
+  GOSUBL MAPFX_VTMP
+  AD0EX
+  C=DAT0.A
+  LA 00008
+  A-C.B
+  LC 00003
+  A=A<C.A  % *8   
+  A+5.A    % OFFS
+  R1=A.B
+
+  LA 00004
+  R0=A.B
+    
+  LA 00
+  R2=A.B    
+  GOSUBL SPR_MAPFX_FULL 
+  GOSUBL SETSPR2
+
+  GOSUBL MAPFX_VTMP
+  AD0EX
+  A=DAT0.A
+  A-1.A
+  DAT0=A.A
+
+  ?A#0.A -> {
+    GOTO .LOOP_10
+  }
+
+% --
+  GOSUBL SWAPSCRN    
+
+%  LC 00100 GOSLOW
+
+  GOSUBL MAPFX_V10
+  AD0EX
+  A=DAT0.A
+  A+1.A
+  DAT0=A.A
+
+  LC 00005
+  ?A#C.A -> {
+    GOTO .LOOP
+  }
+  
+% --
+  LC 05000 GOSLOW
+RTN
+
+
+*MOVERS
+
+*.BIG_LOOP
+  GOSUBL HAS_MOVED
+  AD0EX
+  LA 00
+  DAT0=A.B
+
+  GOSUBL MOV_X
+  AD0EX
+  LA 00000
+  DAT0=A.A
+
+  GOSUBL MOV_Y
+  AD0EX
+  LA 00000
+  DAT0=A.A
+
+  GOSUBL CURR_MAP
+  A+12.A
+  R0=A.A
+  GOSUBL MAP_PTR_MOV
+  AD0EX
+  A=R0.A
+  DAT0=A.A
+
+
+
+*.LOOP
+  GOSUBL MAP_PTR_MOV
+  AD0EX
+  A=DAT0.A
+  AD0EX
+  LA 00
+  A=DAT0.B
+
+  LC 47
+  ?A=C.B -> {
+    GOTO .DO_DOWN
+  }
+
+  LC 45
+  ?A=C.B -> {
+    GOTO .DO_UP
+  }
+
+  LC 48
+  ?A=C.B -> {
+    GOTO .DO_LEFT
+  }
+
+  LC 46
+  ?A=C.B -> {
+    GOTO .DO_RIGHT
+  }
+
+  LC 4A
+  ?A=C.B -> {
+    GOTO .DO_ROT_L
+  }
+
+  LC 4B
+  ?A=C.B -> {
+    GOTO .DO_ROT_R
+  }
+
+% -- LOOP HERE --
+*.DO_LOOP
+  GOSUBL MOV_X
+  AD0EX
+  A=DAT0.A
+  A+1.A
+  DAT0=A.A
+
+  LC 00020
+  ?A=C.B -> {
+    LA 00000
+    DAT0=A.A
+
+    GOSUBL MOV_Y
+    AD0EX
+    A=DAT0.A
+    A+1.A
+    DAT0=A.A
+    LC 00010
+    ?A=C.B -> {
+       GOTO .AT_END
+    }    
+  }
+
+  GOSUBL MAP_PTR_MOV
+  AD0EX
+  A=DAT0.A
+  A+2.A
+  DAT0=A.A
+
+  GOTO .LOOP
+
+% ---
+
+*.AT_END
+  GOSUBL HAS_MOVED
+  AD0EX
+  A=DAT0.B
+  ?A=0.B -> {
+    GOTO .END_MOV
+  }
+
+% -- FIX
+
+  GOSUBL CURR_MAP
+  A+12.A
+  AD0EX
+
+  LC 00200
+  R0=C.A
+  
+
+*.FIXLOOP
+  A=DAT0.B    
+
+  LC F5
+  ?A=C.B -> {
+    LA 45
+    DAT0=A.B
+  }
+
+  LC F6
+  ?A=C.B -> {
+    LA 46
+    DAT0=A.B
+  }
+
+  LC F7
+  ?A=C.B -> {
+    LA 47
+    DAT0=A.B
+  }
+
+  LC F8
+  ?A=C.B -> {
+    LA 48
+    DAT0=A.B
+  }
+
+  D0+2
+
+  C=R0.A
+  C-1.A
+  R0=C.A
+
+  ?C#0.A -> {
+    GOTO .FIXLOOP
+  }
+
+  GOTO .BIG_LOOP
+
+% ---
+
+*.DO_DOWN
+  GOSUBL MOV_Y
+  AD0EX
+  A=DAT0.A
+  LC 0000F
+  ?A=C.A -> {
+    GOTO .DO_LOOP    
+  }
+
+  GOSUBL MAP_PTR_MOV
+  AD0EX
+  A=DAT0.A
+  A+64.A
+  AD0EX
+
+  A=DAT0.B
+
+  LC 2E
+  ?A#C.B -> {
+    GOTO .DO_LOOP    
+  }
+
+  LA F7
+  DAT0=A.B
+  D0-64
+  LA 2E
+  DAT0=A.B
+
+  GOTO .FINISH_MOV
+
+*.DO_UP
+  GOSUBL MOV_Y
+  AD0EX
+  A=DAT0.A
+  LC 00000
+  ?A=C.A -> {
+    GOTO .DO_LOOP    
+  }
+
+  GOSUBL MAP_PTR_MOV
+  AD0EX
+  A=DAT0.A
+  A-64.A
+  AD0EX
+
+  A=DAT0.B
+
+  LC 2E
+  ?A#C.B -> {
+    GOTO .DO_LOOP    
+  }
+
+  LA F5
+  DAT0=A.B
+  D0+64
+  LA 2E
+  DAT0=A.B
+
+  GOTO .FINISH_MOV
+
+
+*.DO_RIGHT
+  GOSUBL MOV_X
+  AD0EX
+  A=DAT0.A
+  LC 0001F
+  ?A=C.A -> {
+    GOTO .DO_LOOP    
+  }
+
+  GOSUBL MAP_PTR_MOV
+  AD0EX
+  A=DAT0.A
+  A+2.A
+  AD0EX
+
+  A=DAT0.B
+
+  LC 2E
+  ?A#C.B -> {
+    GOTO .DO_LOOP    
+  }
+
+  LA F6
+  DAT0=A.B
+  D0-2
+  LA 2E
+  DAT0=A.B
+
+  GOTO .FINISH_MOV
+
+*.DO_LEFT
+  GOSUBL MOV_X
+  AD0EX
+  A=DAT0.A
+  LC 00000
+  ?A=C.A -> {
+    GOTO .DO_LOOP    
+  }
+
+  GOSUBL MAP_PTR_MOV
+  AD0EX
+  A=DAT0.A
+  A-2.A
+  AD0EX
+
+  A=DAT0.B
+
+  LC 2E
+  ?A#C.B -> {
+    GOTO .DO_LOOP    
+  }
+
+  LA F8
+  DAT0=A.B
+  D0+2
+  LA 2E
+  DAT0=A.B
+
+  GOTO .FINISH_MOV
+
+
+*.DO_ROT_L
+  GOSUBL MOV_X
+  AD0EX
+  A=DAT0.A
+  LC 00000
+  ?A#C.A -> {
+% -- LEFT SIDE --
+    GOSUBL MAP_PTR_MOV
+    AD0EX
+    A=DAT0.A
+    A-2.A
+    AD0EX
+    A=DAT0.B
+    LC 46
+    GOSUB ROT_L_BLOCK
+    DAT0=A.B
+    ?C#0.B -> {
+      GOTO .FINISH_MOV
+    }
+  }
+
+  GOSUBL MOV_X
+  AD0EX
+  A=DAT0.A
+  LC 0001F
+  ?A<C.A -> {
+% -- RIGHT SIDE --
+    GOSUBL MAP_PTR_MOV
+    AD0EX
+    A=DAT0.A
+    A+2.A
+    AD0EX
+    A=DAT0.B
+    LC 48
+    GOSUB ROT_L_BLOCK
+    DAT0=A.B
+    ?C#0.B -> {
+      GOTO .FINISH_MOV
+    }
+  }
+
+
+  GOSUBL MOV_Y
+  AD0EX
+  A=DAT0.A
+  LC 00000
+  ?A#C.A -> {
+% -- UP SIDE --
+    GOSUBL MAP_PTR_MOV
+    AD0EX
+    A=DAT0.A
+    A-64.A
+    AD0EX
+    A=DAT0.B
+    LC 47
+    GOSUB ROT_L_BLOCK
+    DAT0=A.B
+    ?C#0.B -> {
+      GOTO .FINISH_MOV
+    }
+  }
+
+  GOSUBL MOV_Y
+  AD0EX
+  A=DAT0.A
+  LC 0000F
+  ?A<C.A -> {
+% -- DOWN SIDE --
+    GOSUBL MAP_PTR_MOV
+    AD0EX
+    A=DAT0.A
+    A+64.A
+    AD0EX
+    A=DAT0.B
+    LC 45
+    GOSUB ROT_L_BLOCK
+    DAT0=A.B
+    ?C#0.B -> {
+      GOTO .FINISH_MOV
+    }
+  }
+
+  GOTO .DO_LOOP 
+
+
+*.DO_ROT_R
+  GOSUBL MOV_X
+  AD0EX
+  A=DAT0.A
+  LC 00000
+  ?A#C.A -> {
+% -- LEFT SIDE --
+    GOSUBL MAP_PTR_MOV
+    AD0EX
+    A=DAT0.A
+    A-2.A
+    AD0EX
+    A=DAT0.B
+    LC 46
+    GOSUB ROT_R_BLOCK
+    DAT0=A.B
+    ?C#0.B -> {
+      GOTO .FINISH_MOV
+    }
+  }
+
+  GOSUBL MOV_X
+  AD0EX
+  A=DAT0.A
+  LC 0001F
+  ?A<C.A -> {
+% -- RIGHT SIDE --
+    GOSUBL MAP_PTR_MOV
+    AD0EX
+    A=DAT0.A
+    A+2.A
+    AD0EX
+    A=DAT0.B
+    LC 48
+    GOSUB ROT_R_BLOCK
+    DAT0=A.B
+    ?C#0.B -> {
+      GOTO .FINISH_MOV
+    }
+  }
+
+
+  GOSUBL MOV_Y
+  AD0EX
+  A=DAT0.A
+  LC 00000
+  ?A#C.A -> {
+% -- UP SIDE --
+    GOSUBL MAP_PTR_MOV
+    AD0EX
+    A=DAT0.A
+    A-64.A
+    AD0EX
+    A=DAT0.B
+    LC 47
+    GOSUB ROT_R_BLOCK
+    DAT0=A.B
+    ?C#0.B -> {
+      GOTO .FINISH_MOV
+    }
+  }
+
+  GOSUBL MOV_Y
+  AD0EX
+  A=DAT0.A
+  LC 0000F
+  ?A<C.A -> {
+% -- DOWN SIDE --
+    GOSUBL MAP_PTR_MOV
+    AD0EX
+    A=DAT0.A
+    A+64.A
+    AD0EX
+    A=DAT0.B
+    LC 45
+    GOSUB ROT_R_BLOCK
+    DAT0=A.B
+    ?C#0.B -> {
+      GOTO .FINISH_MOV
+    }
+  }
+
+  GOTO .DO_LOOP 
+
+
+
+*.FINISH_MOV
+  GOSUBL CLRSCR
+  GOSUBL DRAW_MAP
+  GOSUBL BORDER
+
+  GOSUBL GRAB_MAP_G
+
+  GOSUBL ANI_CURSOR
+  GOSUBL SET_CURSOR
+
+  GOSUBL SWAPSCRN
+  
+  GOSUBL HAS_MOVED
+  AD0EX
+  LA 01
+  DAT0=A.B
+
+  GOSUBL SND_MOVERS
+  
+  GOTO .DO_LOOP 
+
+*.END_MOV  
+RTN
+
+
+*ROT_L_BLOCK
+  ?A#C.B -> {
+    LC 00
+    RTN
+  }
+
+  LC 45
+  ?A=C.B -> {
+    LA 48
+    LC 01
+    RTN
+  }
+
+  LC 46
+  ?A=C.B -> {
+    LA 45
+    LC 01
+    RTN
+  }
+
+  LC 47
+  ?A=C.B -> {
+    LA 46
+    LC 01
+    RTN
+  }
+
+  LC 48
+  ?A=C.B -> {
+    LA 47
+    LC 01
+    RTN
+  }
+
+  LC 00
+RTN
+
+*ROT_R_BLOCK
+  ?A#C.B -> {
+    LC 00
+    RTN
+  }
+
+  LC 45
+  ?A=C.B -> {
+    LA 46
+    LC 01
+    RTN
+  }
+
+  LC 46
+  ?A=C.B -> {
+    LA 47
+    LC 01
+    RTN
+  }
+
+  LC 47
+  ?A=C.B -> {
+    LA 48
+    LC 01
+    RTN
+  }
+
+  LC 48
+  ?A=C.B -> {
+    LA 45
+    LC 01
+    RTN
+  }
+
+  LC 00
+RTN
+
+
+% === DATA ===
+*X__________GAME_DATA
+
+% -- GAME DAT/VAR --
+
+'LEVELS
+
+*CURR_MAP
+A=PC
+LC 0000B
+A+C.A
+RTN
+
+$/00  % MIN_XOFFS
+$/00  % MIN_YOFFS
+$/00  % MAX_XOFFS
+$/00  % MAX_YOFFS
+$/00  % STRT_XOFFS
+$/00  % STRT_YOFFS
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+¢................................¢
+
+
+$000000000000
+$000000000000
+
+*LEVEL
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*SCORE
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*TIMER1
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*BONUS
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+
+*MAP_PTR
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+
+*MAP_X
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*MAP_Y
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*MAP_XOFFS
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*MAP_YOFFS
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+
+*CUR_X
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*CUR_Y
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*CUR_IDX
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*CUR_IDX_FX
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*CUR_IDX_MARK
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+
+*MAP_PTR_MOV
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*MOV_X
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*MOV_Y
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*HAS_MOVED
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+
+
+*BLOCKS_SELECTED
+A=PC
+LC 0000B
+A+C.A
+RTN
+% X   Y VAL  
+$00 $00 $00
+$00 $00 $00
+$00 $00 $00
+% LLLLLL
+$FFFFFFFFFFFFFFFFFFFF
+
+*BLOCKS_SEL_CNT
+A=PC
+LC 0000B
+A+C.A
+RTN  
+$00
+
+
+*KEY
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*TMP_I
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*TMP_II
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*TMP_PTR1
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*TMP_PTR2
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+
+*MAPFX_VTMP
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*MAPFX_V10
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*MAPFX_V11
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+
+*SPR_BLOCKS
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/01  % B
+$/09  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+$000000000000000001000000000000000000
+
+% BLOCKS
+$0000EF002E00AF00EF00EF00EB00EF000000
+$0000EF002700A300E900EC006A002F000000
+$00000000830046004700C700830000000000
+$0000EF002800AB00AA00AB002800EF000000
+
+
+% ARROWS1
+$FF10101011109310D710931093101010FF10
+$FF1010101110D310D710D31011101010FF10
+$FF10101093109310D710931011101010FF10
+$FF10101011109710D710971011101010FF10
+
+% WALL
+$FF105410FF101110FF105410FF101110FF10
+
+
+% ROTATORS
+%$FF10101013109410D910D81054101010FF10
+%$FF101010911052103710361054101010FF10
+$FF107C10BB10D71017109710DB107C10FF10
+$FF107C10BB10D710D110D310B7107C10FF10
+
+$00000000C70046004700C700C70000000000
+$0000C7002800AB006C00EF00EF00C7000000
+
+
+% --- STRT BLOCK --
+$FF101010DF105E105F10DF10DF10D710FF10
+
+*SPR_CURSORS
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/01  % B
+$/09  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+
+%$5510AA005510AA005510AA005510AA005510
+%$0000AA004500AA004500AA004500AA000000
+%$000000004500820045008200450000000000
+%$000000000000820001008200000000000000
+%$000000000000000000000000000000000000
+%$000000000000820001008200000000000000
+%$000000004500820045008200450000000000
+%$0000AA004500AA004500AA004500AA000000
+%$5510AA005510AA005510AA005510AA005510
+
+
+$FF10BA105510BA105510BA105510BA10FF10
+$FF10BA105510BA105510BA105510BA10FF10
+$FF101010551092105510921055101010FF10
+$FF101010101092101110921010101010FF10
+$FF101010101010101110101010101010FF10
+$FF101010101092101110921010101010FF10
+$FF101010551092105510921055101010FF10
+$FF10BA105510BA105510BA105510BA10FF10
+$FF10BA105510BA105510BA105510BA10FF10
+
+
+
+*SPR_CURSORS_FX
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/01  % B
+$/09  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+$FF10BA105510BA105510BA105510BA10FF10
+$0000EF006D00AA006D00AA006D00EF000000
+$00000000C700C6004500C600C70000000000
+$000000000000830083008300000000000000
+$000000000000000001000000000000000000
+
+
+*SPR_CURSORS_MARK1
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/01  % B
+$/09  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+
+$7C1010104510820045008200450010107C10
+$7C1010104510820045008200450010107C10
+$000000004500820045008200450000000000
+$000000000000820001008200000000000000
+$000000000000000001000000000000000000
+$000000000000000000000000000000000000
+$000000000000820001008200000000000000
+$000000004500820045008200450000000000
+
+
+
+%$5510AA005510AA005510AA005510AA005510
+%$5510AA005510AA005510AA005510AA005510
+$000000004500820045008200450000000000
+$000000004500820045008200450000000000
+
+$000000004500820045008200450000000000
+$000000000000820001008200000000000000
+$000000000000000001000000000000000000
+$000000000000000000000000000000000000
+$000000000000820001008200000000000000
+$000000004500820045008200450000000000
+
+
+*SPR_CURSORS_MARK2
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/01  % B
+$/09  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+
+
+$BA101010450092104500921045001010BA10
+$7D10BA105510AA005510AA005510BA107D10
+$BE101010550092104500921045101010FA10
+$7F101010101092001110821010101010FD10
+$BB101010000092101110921000001010BB10
+$FD1010101010001011101000101000005710
+$FA101010001010100100101010001010BE10
+$7D1010101010820011108200101010107D10
+
+*SPR_UP
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/0C  % B
+$/05  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+$00000000000000000000000000EFFFFFFFFFFFFFFFFFFFFFFFFF20000000000000000000000008200000000000000000000000080000000000000000000000000000000000000000000000000000
+
+
+*SPR_DN
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/0C  % B
+$/04  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+$200000000000000000000000082000000000000000000000000820000000000000000000000008EFFFFFFFFFFFFFFFFFFFFFFFFF
+
+*SPR_LEV_SCO
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/02  % B
+$/04  % H
+$/00  % CNT
+$/18  % B*H
+% DATA
+$175710135310115110772770
+$666370315530415310363570
+
+
+*SPR_PLUS
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/00  % B
+$/03  % H
+$/00  % CNT
+$/18  % B*H
+% DATA
+$040E04
+
+
+*SPR_BRR
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/02  % B
+$/06  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+$010010A000A0500041A000A0010010000000
+$014000A08200500500A082000140000000000
+
+
+*SPR_MAPFX_FULL
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/0C  % B
+$/09  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+%$FFFFFFFFFFFFFFFFFFFFFFFF1010101010101010101010101010DFDFDFDFDFDFDFDFDFDFDFDF105E5E5E5E5E5E5E5E5E5E5E5E105F5F5F5F5F5F5F5F5F5F5F5F10DFDFDFDFDFDFDFDFDFDFDFDF10DFDFDFDFDFDFDFDFDFDFDFDF10D7D7D7D7D7D7D7D7D7D7D7D710FFFFFFFFFFFFFFFFFFFFFFFF10
+$FFFFFFFFFFFFFFFFFFFFFFFF10BABABABABABABABABABABABA1055555555555555555555555510BABABABABABABABABABABABA1055555555555555555555555510BABABABABABABABABABABABA1055555555555555555555555510BABABABABABABABABABABABA10FFFFFFFFFFFFFFFFFFFFFFFF10
+
+
+*SPR_LOGO
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/09  % B
+$/14  % H
+$/00  % CNT
+$/24  % B*H
+% DATA
+$000000E000000000000000000011000000000000000008E3000000000000000008F3000000000000000008F3000000000000000000F1000000000000000000E000000000000000000000E00000000000FFFF30009100000000000000E000D100000000000000C100E000C70EF3010C1081E000006C0304800C1081E04000389108400C10C0E00000389100300C1E70E04000389970300C1000E00000389160300C1070E0E083389160300C10E0E091466C0360300C10C1E0D557C70E703000000000E08300000000
+
+% -- EO GAME DAT/VAR--
+
+
+*Z_BLK
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/00  % B
+$/07  % H
+$/07  % CNT
+$/10  % B*H
+% DATA
+$0000000000000000
+$FFFFFFFFFFFFFFFF
+
+
+*SCROLLTXT
+A=PC
+LC 0000B
+A+C.A
+RTN
+¢                 ¢ 
+¢TRILOGY BY 0XF001    ¢ 
+¢USE THE ARROW KEYS TO MOVE THE CURSOR. ¢
+¢USE THE EEX-KEY TO SELECT A STONE   ¢
+¢SELECT 3 SAME STONES¢
+¢                      ¢ 
+$00000
+
+*X__________DATA
+
+*SND_DAT
+A=PC
+LC 0000B
+A+C.A
+RTN
+$/00062
+$/000C2
+$/00122
+$/00182
+$/001E2
+$/00242
+$/002A2
+
+$/00302
+$/00362
+$/003C2
+$/00422
+$/00482
+$/004E2
+$/00542
+
+*SND_STR
+A=PC
+LC 0000B
+A+C.A
+RTN
+
+¢EEAAA EEAAA EEAAA EEAAA ¢
+¢FFAAA FFAAA FFAAA FFAAA ¢
+¢DDAAA DDAAA DDAAA DDAAA ¢
+¢CCAAA CCAAA CCAAA CCAAA ¢
+
+
+$00000
+*SND_IDX1
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*X__________VARS
+
+*SWAPFL
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+
+*SCROLLX
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*SCROLLY
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00
+
+*SCROLLPTR
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+*S_MENUPTR
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+
+% === FONTS ===
+*X_________FONTS
+
+
+*FONT_NUMS
+A=PC
+LC 00015
+A+C.A
+D0=(5)SPRADR
+DAT0=A.A
+RTN
+$/00  % B
+$/06  % H
+$/00  % CNT
+$/0C  % B*H
+% DATA
+$E0B1B1B1B1E0
+%$81C1A1818181
+$81C1E1B18181
+
+$E09181E030F1
+$F181E08181F0
+$3030B0F1C0C0
+$F030F08181F0
+$E030F0B1B1E0
+$F181C0606060
+$E0B1E0B1B1E0
+$E0B1B1E181E0
+
+
+*FONT
+A=PC
+LC 00015
+A+C.A
+D0=(5)FONTADR
+DAT0=A.A
+RTN
+
+$0000000000000000
+$4040400040000000
+$A0A0000000000000
+$A0F1A0F1A0000000
+$F1111111F1000000
+$F1111111F1000000
+$F1111111F1000000
+$F1111111F1000000
+$8140404081000000
+$3040404030000000
+$51E0F1E051000000
+$0040E04000000000
+$0000000010100000
+$0000E00000000000
+$0000000010000000
+$0080402000000000
+$E0915131E0000000
+$40704040F1000000
+$E101E010F1000000
+$E001C001F0000000
+$1090F18080000000
+$F110E101F1000000
+$E010F011E0000000
+$F101804040000000
+$E011E011E0000000
+$E011E101E0000000
+$0020002000000000
+$0010001010000000
+$0180408001000000
+$00F000F000000000
+$1020402010000000
+$7080600020000000
+$E0117141F0000000
+$F001711111000000
+$F001F011F0000000
+$E1101010E1000000
+$F0111111F0000000
+$F1107010F1000000
+$F110701010000000
+$E110D111E1000000
+$1111F11111000000
+$E0404040E0000000
+$C180808060000000
+$1190709011000000
+$10101010F1000000
+$11B1511111000000
+$1131519111000000
+$E0111111E0000000
+$F01111F010000000
+$E0115191E1000000
+$F01111F011000000
+$E110E001F0000000
+$F140404040000000
+$11111111E0000000
+$111111A040000000
+$111151B111000000
+$1111E01111000000
+$1111A04040000000
+$F1804020F1000000
+$F1111111F1000000
+$F1111111F1000000
+$F1111111F1000000
+$F1111111F1000000
+$F1111111F1000000
+
+
+% === SCREENBUFS ===
+
+*MENUBLOCK
+A=PC
+LC 0000B
+A+C.A
+RTN
+
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+$00000000000000000
+
+
+*SCRN
+A=PC
+LC 0000B
+A+C.A
+RTN
+$00000
+
+
+*MAP_GFX_BUF
+A=PC
+LC 0000B
+A+C.A
+RTN
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+$0000000000000000000000000000000000
+%$0
+
+% === ENDSEQ ===
+*ENDME
+% --- RESTORE HEADER
+LC 10 SETLNED
+%INTON
+%
+% --- RESTORE SCREEN
+SCREEN CD0EX D0=00120 DAT0=C.A
+MENU CD0EX D0=00130 DAT0=C.A
+
+LOADRPL
+ENDCODE
+;
+
+@
