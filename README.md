@@ -2,7 +2,12 @@
 A complete game with sound- and animation effects written in assembly on and for the HP49 calculator (5bit processor!)
 
 ### The Game
-This is a logic game, consisting of many levels. Levels can be bigger than the actual screen. The levels consist of a field with different types of stones placed onto it.  
+This is a logic game, consisting of many levels. Levels can be bigger than the actual screen. The levels consist of a field with different types of stones placed onto it:
+
+ - regular stones showing a symbol
+ - moving stones, showing an arrow
+ - wall stones
+ - rotation stones: make the moving stones change their direction
 
 There are regular stones, and special stones that can move. **Moving** stones will stop on any other stone (or the border) in their way. They show their moving direction as an arrow.  
 
@@ -13,8 +18,9 @@ Often, moving stones are blocked by regular stones on start. Once you make regul
 ### The Rules
 Select any 3 same stones located in the shape of a **rectangular triangle** to make them disappear (like in the shape of the L within the logo you can see below).  
 
-When all regular stones have disappeared, the level is solved.
+When all regular AND moving stones have disappeared, the level is solved.  
 
+Only wall stones and rotation stones can be left.
 
 
 Start Screen with scroller
