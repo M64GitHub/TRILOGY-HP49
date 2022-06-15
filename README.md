@@ -22,6 +22,13 @@ When all regular AND moving stones have disappeared, the level is solved.
 
 Only wall stones and rotation stones can be left.
 
+### The Points
+
+ - every dissolved triangle gives 5 points
+ - every completed level gives 100 points
+ - a bonus points countdown starts from 100 points and decreases every few seconds
+ - the faster you complete the level, the more points
+
 ### Animations showing the game
 
 Start Screen, Level 1-2  
