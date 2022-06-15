@@ -22,6 +22,11 @@ When all regular AND moving stones have disappeared, the level is solved.
 
 Only wall stones and rotation stones can be left.
 
+### Animations showing the game
+
+![Start Screen with scroller](https://github.com/M64GitHub/TRILOGY/blob/main/t1.gif" Start screen with scroller")  
+
+
 
 Start Screen with scroller
 ![Start Screen with scroller](https://github.com/M64GitHub/TRILOGY/blob/main/1.png "Start screen with scroller")  
