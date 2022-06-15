@@ -11,7 +11,7 @@ There are regular stones, and special stones that can move. **Moving** stones wi
 Often, moving stones are blocked by regular stones on start. Once you make regular stones disappear, they start moving and can complicate / change the logic you had in your mind ;)
 
 ### The Rules
-Select any 3 same stones located in the shape of a rectangular to make them disappear.  
+Select any 3 same stones located in the shape of a **rectangular triangle** to make them disappear.  
 
 When all regular stones have disappeared, the level is solved.
 
