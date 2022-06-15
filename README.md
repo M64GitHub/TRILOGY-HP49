@@ -1,5 +1,5 @@
 # TRILOGY
-A complete game with sound- and animation-effects written in assembly on and for the HP49 calculator (5bit processor!)
+A complete game with sound- and animation effects written in assembly on and for the HP49 calculator (5bit processor!)
 
 ### The Game
 This is a logic game, consisting of many levels. Levels can be bigger than the actual screen. The levels consist of a field with different types of stones placed onto it.  
