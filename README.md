@@ -26,6 +26,15 @@ Only wall stones and rotation stones can be left.
 
 ![](https://github.com/M64GitHub/TRILOGY/blob/main/t1.gif "")  
 
+![](https://github.com/M64GitHub/TRILOGY/blob/main/t2.gif "")  
+
+![](https://github.com/M64GitHub/TRILOGY/blob/main/t3.gif "")  
+
+![](https://github.com/M64GitHub/TRILOGY/blob/main/t4.gif "")  
+
+![](https://github.com/M64GitHub/TRILOGY/blob/main/t5.gif "")  
+
+
 
 
 Start Screen with scroller
