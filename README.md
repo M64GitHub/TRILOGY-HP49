@@ -13,7 +13,7 @@ There are regular stones, and special stones that can move. **Moving** stones wi
 
 **Rotation** stones will defer the way a moving stone moves. When a moving stone hits a rotation stone, it's direction changes.
 
-Often, moving stones are blocked by regular stones on start. Once you make regular stones disappear, they start moving and can complicate / change the logic you had in your mind ;)
+Often, moving stones are blocked by regular stones on start. Once you make regular stones disappear, they (the moving stones) start moving and can complicate / change the logic you had in your mind ;)
 
 ### The Rules
 Select any 3 same stones located in the shape of a **rectangular triangle** to make them disappear (like in the shape of the L within the logo you can see below).  
