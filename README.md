@@ -1,10 +1,18 @@
 # TRILOGY
-A complete game with sound- and animation effects written in assembly on and for the HP49 calculator / saturn processor (5bit processor!)
+A complete game with sound- and animation effects written in assembly (MASD syntax) on and for the HP49 calculator / saturn processor (5bit processor!)
 
 (The source is in [TYII.A](https://github.com/M64GitHub/TRILOGY-HP49/blob/main/TYII.A), which is the only file required. Images within the repository are used for illustating this readme)
 
 ### Installation
-Put TYII.A on the stack and press enter to assemble. It will replace itself with the binary you can play.
+You can assemble the game by activating the builtin development library:
+```
+256 ATTACH
+```
+Then put `TYII.A` on the stack and press 
+```
+→PRG
+```
+to build. It will replace itself with the binary you can play. Store that object like any other stack item. Retrieve like any other object to play.
 
 ### The Game
 This is a logic game, consisting of many levels. Levels can be bigger than the actual screen. The levels consist of a field with different types of stones placed onto it:
