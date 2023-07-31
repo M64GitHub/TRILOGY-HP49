@@ -1,7 +1,7 @@
 # TRILOGY
 A complete game with sound- and animation effects written in assembly on and for the HP49 calculator / saturn processor (5bit processor!)
 
-(The source is in TYII.a, which is the only file required. Images within the repository are used for illustating this readme)
+(The source is in [TYII.A](https://github.com/M64GitHub/TRILOGY-HP49/blob/main/TYII.A), which is the only file required. Images within the repository are used for illustating this readme)
 
 ### Installation
 Put TYII.A on the stack and press enter to assemble. It will replace itself with the binary you can play.
