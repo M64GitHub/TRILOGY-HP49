@@ -1,5 +1,5 @@
 # TRILOGY
-A complete game with sound- and animation effects written in assembly (MASD syntax) on and for the HP49 calculator / saturn processor (5bit processor!)
+A complete game with sound- and animation effects written in assembly (MASD syntax) on and for the HP49 calculator / saturn processor.
 
 (The source is in [TYII.A](https://github.com/M64GitHub/TRILOGY-HP49/blob/main/TYII.A), which is the only file required. Images within the repository are used for illustating this readme)
 
