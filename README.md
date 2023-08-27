@@ -45,39 +45,16 @@ Only wall stones and rotation stones can be left.
 ### Animations showing the game
 
 Start Screen, Level 1-2  
-
 ![](https://github.com/M64GitHub/TRILOGY/blob/main/t1.gif "")  
+
 ---
 Level 3  
+![t2](https://github.com/M64GitHub/TRILOGY-HP49/assets/84202356/a392974f-daef-49c3-987d-397fcea01787)
 
-![](https://github.com/M64GitHub/TRILOGY/blob/main/t2.gif "")  
 ---
 Level 4-6  
+![t4](https://github.com/M64GitHub/TRILOGY-HP49/assets/84202356/5945a1fa-7cdb-497a-b856-a6f02051f5c8)
 
-![](https://github.com/M64GitHub/TRILOGY/blob/main/t3.gif "")  
 ---
 Level 7-8  
-
-![](https://github.com/M64GitHub/TRILOGY/blob/main/t4.gif "")  
-
-
-Start Screen with scroller
-![Start Screen with scroller](https://github.com/M64GitHub/TRILOGY/blob/main/1.png "Start screen with scroller")  
----
-
-Example Screenshot of a Level
-![Example Screenshot of a Level](https://github.com/M64GitHub/TRILOGY/blob/main/2.png "Example Screenshot of a Level")  
----
-
-
-Example Screenshot of a Level
-![Example Screenshot of a Level](https://github.com/M64GitHub/TRILOGY/blob/main/5.png "Example Screenshot of a Level")  
----
-
-Example Screenshot of a Level
-![Example Screenshot of a Level](https://github.com/M64GitHub/TRILOGY/blob/main/6.png "Example Screenshot of a Level")  
----
-
-Example Screenshot of a Level
-![Example Screenshot of a Level](https://github.com/M64GitHub/TRILOGY/blob/main/7.png "Example Screenshot of a Level")  
----
+![t4](https://github.com/M64GitHub/TRILOGY-HP49/assets/84202356/2531b0dc-a14c-4fd7-ba51-2eaa5d92396b)
